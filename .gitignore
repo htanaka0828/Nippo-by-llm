@@ -1,0 +1,10 @@
+# 環境変数ファイル
+.env
+
+# 設定ファイル
+config.json
+
+# 一時データディレクトリ
+fetch_data/*
+
+!.keep

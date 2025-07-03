@@ -1,0 +1,59 @@
+{
+  "monitoring_targets": [
+    {
+      "org": "your-org-name",
+      "repo": "main-project",
+      "branches": [
+        "feature/sample-feature-branch"
+      ],
+      "priority": "high",
+      "description": "メインプロジェクト - 重要な機能開発"
+    },
+    {
+      "org": "your-org-name",
+      "repo": "api-*",
+      "branches": [
+        "feature/*"
+      ],
+      "priority": "high",
+      "description": "API関連プロジェクト群"
+    },
+    {
+      "org": "another-org",
+      "repo": "frontend-*",
+      "branches": [
+        "feature/*",
+        "feat/*",
+        "fix/*"
+      ],
+      "priority": "high",
+      "description": "フロントエンドプロジェクト群"
+    },
+    {
+      "org": "open-source-org",
+      "repo": "sample-project",
+      "branches": [
+        "feature/*"
+      ],
+      "priority": "medium",
+      "description": "オープンソースプロジェクト"
+    }
+  ],
+  "global_settings": {
+    "author": "your-github-username",
+    "max_commits_per_branch": 50,
+    "date_range_days": 1,
+    "exclude_patterns": [
+      "*/test/*",
+      "*/temp/*",
+      "*experimental*"
+    ],
+    "parallel_jobs": 10
+  },
+  "output_settings": {
+    "format": "markdown",
+    "include_stats": true,
+    "group_by": ["repository", "branch"],
+    "sort_by": "date"
+  }
+}
