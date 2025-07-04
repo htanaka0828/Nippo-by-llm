@@ -13,6 +13,7 @@ DATA_DIR="fetch_data"
 # 基本設定
 USERNAME=$(gh api user --jq '.login')
 TODAY=$(date +%Y-%m-%d)
+# TODAY=$(date -d "yesterday" +%Y-%m-%d) # 昨日のコミットを取得する場合はこの行を有効にしてください
 TODAY_START="${TODAY}T00:00:00Z"
 TODAY_END="${TODAY}T23:59:59Z"
 

@@ -125,11 +125,19 @@ gh auth refresh -s repo -s read:org -s user
 - プロジェクト別・優先度別に整理
 - ヘッダー、セクション、箇条書きを適切に配置
 - **事実のみを記載**：コミット履歴にない推測や想定は含めない
+- **チャンネル設定**: 環境変数 `SLACK_CHANNEL` から自動取得
 
 **ファイル処理について：**
 - Claude Codeでは slack_blocks.json の作成のみ実行
 - ファイルのリネームはSlack投稿完了後に実行
 - 次回実行時のデータ混在を防止
+
+**重要**: slack_blocks.json作成時は、チャンネル指定を環境変数 `SLACK_CHANNEL` から取得してください。
+```bash
+# .envファイルのSLACK_CHANNEL変数を使用
+source .env
+# JSONファイル内のchannelフィールドに$SLACK_CHANNELの値を設定
+```
 
 ### 3. Slack投稿（Block Kit形式）
 ```bash
