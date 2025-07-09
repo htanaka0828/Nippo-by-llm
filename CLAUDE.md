@@ -31,8 +31,15 @@ curl -X POST https://slack.com/api/chat.postMessage \
   -d @fetch_data/slack_blocks.json
 
 # 4. 処理済みファイルのリネーム（Claude Codeが自動実行）
-mv fetch_data/today_commits.json fetch_data/today_commits_$(date +%Y-%m-%d).json
-mv fetch_data/slack_blocks.json fetch_data/slack_blocks_$(date +%Y-%m-%d).json
+# .envから取得、なければ実行日を使用
+if [ -f .env ]; then
+  source .env
+fi
+if [ -z "$TARGET_DATE" ]; then
+  TARGET_DATE=$(date +%Y-%m-%d)
+fi
+mv fetch_data/today_commits.json fetch_data/today_commits_${TARGET_DATE}.json
+mv fetch_data/slack_blocks.json fetch_data/slack_blocks_${TARGET_DATE}.json
 
 echo "日報をSlackに投稿しました！"
 ```
@@ -78,6 +85,18 @@ vi config.json
 - **除外パターン**: テスト用ブランチなどを自動除外
 
 ## 必要な設定
+
+### 対象日付の設定（オプション）
+デフォルトでは実行日のコミットを取得しますが、.envファイルで任意の日付を指定できます：
+
+```bash
+# .envファイルに追加
+TARGET_DATE=2025-07-07  # YYYY-MM-DD形式で指定
+```
+
+優先順位：
+1. .envファイルのTARGET_DATE設定
+2. fetch.sh内のデフォルト設定（実行日）
 
 ### GitHub CLI認証
 ```bash
@@ -169,7 +188,7 @@ echo "日報をSlackに投稿しました！"
 **従来方式での自動化:**
 ```bash
 # 手動でコマンドを組み合わせる場合（Block Kit形式）
-0 18 * * * cd /path/to/nippo-by-llm && ./fetch.sh && claude -p "fetch_data/today_commits.jsonを読み込んで、Slack Block Kit形式の日報JSONをfetch_data/slack_blocks.jsonに作成してください" && source .env && curl -X POST https://slack.com/api/chat.postMessage -H "Authorization: Bearer $SLACK_BOT_TOKEN" -H "Content-Type: application/json" -d @fetch_data/slack_blocks.json && mv fetch_data/today_commits.json fetch_data/today_commits_$(date +%Y-%m-%d).json && mv fetch_data/slack_blocks.json fetch_data/slack_blocks_$(date +%Y-%m-%d).json && echo "日報投稿完了: $(date)"
+0 18 * * * cd /path/to/nippo-by-llm && ./fetch.sh && claude -p "fetch_data/today_commits.jsonを読み込んで、Slack Block Kit形式の日報JSONをfetch_data/slack_blocks.jsonに作成してください" && source .env && curl -X POST https://slack.com/api/chat.postMessage -H "Authorization: Bearer $SLACK_BOT_TOKEN" -H "Content-Type: application/json" -d @fetch_data/slack_blocks.json && TARGET_DATE=${TARGET_DATE:-$(date +%Y-%m-%d)} && mv fetch_data/today_commits.json fetch_data/today_commits_${TARGET_DATE}.json && mv fetch_data/slack_blocks.json fetch_data/slack_blocks_${TARGET_DATE}.json && echo "日報投稿完了: $(date)"
 ```
 
 ### GitHub Actionsで実行

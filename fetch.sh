@@ -10,16 +10,29 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$SCRIPT_DIR/config.json"
 DATA_DIR="fetch_data"
 
+# .envファイルを読み込み（存在する場合）
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    source "$SCRIPT_DIR/.env"
+fi
+
 # 基本設定
 USERNAME=$(gh api user --jq '.login')
-TODAY=$(date +%Y-%m-%d)
-# TODAY=$(date -d "yesterday" +%Y-%m-%d) # 昨日のコミットを取得する場合はこの行を有効にしてください
-TODAY_START="${TODAY}T00:00:00Z"
-TODAY_END="${TODAY}T23:59:59Z"
+
+# TARGET_DATEの設定（.env > 実行日の優先順位）
+if [ -n "$TARGET_DATE" ]; then
+    # .envで設定されている場合はそれを使用
+    echo "対象日付を.envから取得: $TARGET_DATE"
+else
+    # .envに設定がない場合は実行日を使用
+    TARGET_DATE=$(date +%Y-%m-%d)
+fi
+
+TARGET_DATE_START="${TARGET_DATE}T00:00:00Z"
+TARGET_DATE_END="${TARGET_DATE}T23:59:59Z"
 
 echo "=== 設定駆動型コミット履歴取得開始 ==="
 echo "ユーザー: $USERNAME"
-echo "対象日: $TODAY"
+echo "対象日: $TARGET_DATE"
 echo "設定ファイル: $CONFIG_FILE"
 echo ""
 
@@ -136,7 +149,7 @@ for ((i=0; i<target_count; i++)); do
                             echo "    ✓ $actual_branch (パターン: $branch_pattern)"
                             
                             # コミット検索
-                            commits=$(gh api "repos/$repo_full/commits?sha=$actual_branch&since=$TODAY_START&until=$TODAY_END&per_page=$MAX_COMMITS" \
+                            commits=$(gh api "repos/$repo_full/commits?sha=$actual_branch&since=$TARGET_DATE_START&until=$TARGET_DATE_END&per_page=$MAX_COMMITS" \
                                 --jq "map(select(.commit.author.email == \"$AUTHOR@gmail.com\" or .author.login == \"$AUTHOR\")) | 
                                 map({
                                     repository: \"$repo_full\",
@@ -198,6 +211,7 @@ if [ "$total_commits" -gt 0 ]; then
     echo "【JSONデータ取得完了】"
     echo "$DATA_DIR/today_commits.json に保存されました。"
     echo "Claude Code等のLLMツールでこのJSONを読み込んで日報を作成してください。"
+    echo "対象日付: $TARGET_DATE"
 else
     echo ""
     echo "本日はコミットが検出されませんでした。"
